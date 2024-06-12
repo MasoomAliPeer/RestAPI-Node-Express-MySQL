@@ -10,12 +10,14 @@
   "author": "Federico Berbara",
   "license": "ISC",
   "dependencies": {
+    "@types/dotenv": "^8.2.0",
     "cors": "^2.8.5",
-    "dotenv": "^8.2.0",
+    "dotenv": "^16.4.5",
     "express": "^4.17.1",
     "express-mysql-session": "^2.1.5",
     "morgan": "^1.10.0",
     "mysql": "^2.18.1",
+    "mysql2": "^3.10.0",
     "pg": "^8.5.1"
   },
   "devDependencies": {

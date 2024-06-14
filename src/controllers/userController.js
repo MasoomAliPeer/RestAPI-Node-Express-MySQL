@@ -1,4 +1,9 @@
 import dbConnection from "../database/dbConnection";
+import bcrypt from "bcrypt"; // Assuming passwords are hashed
+import jwt from "jsonwebtoken"; // For generating JWT tokens
+import dotenv from "dotenv";
+
+dotenv.config();
 
 export const getUser = (req, res) => {
   let sqlQuery = "SELECT * FROM user";
@@ -6,6 +11,85 @@ export const getUser = (req, res) => {
   dbConnection.query(sqlQuery, (error, results) => {
     if (error) throw error;
     res.status(200).json(results);
+  });
+};
+
+export const createNewUser = (req, res) => {
+  const user = req.body;
+  const userObj = [
+    user.FirstName,
+    user.LastName,
+    user.EmailAddress,
+    bcrypt.hashSync(user.Password, 10), // Hash the password before storing it
+    user.PhoneNumber,
+  ];
+
+  if (
+    !user.FirstName ||
+    !user.LastName ||
+    !user.EmailAddress ||
+    !user.Password ||
+    !user.PhoneNumber
+  ) {
+    return res.json({
+      ErrorCode: 204,
+      Message: "Fields cannot be empty",
+    });
+  }
+
+  let sqlQuery =
+    "INSERT INTO user (FirstName, LastName, EmailAddress, Password, PhoneNumber) VALUES (?, ?, ?, ?, ?)";
+
+  dbConnection.query(sqlQuery, userObj, (err, result) => {
+    if (err) throw err;
+    res.status(201).json("User created with id: " + result.insertId);
+  });
+};
+
+export const loginUser = (req, res) => {
+  const { EmailAddress, Password } = req.body;
+
+  if (!EmailAddress || !Password) {
+    return res.status(400).json({
+      ErrorCode: 204,
+      Message: "Email and Password cannot be empty",
+    });
+  }
+
+  let sqlQuery = "SELECT * FROM user WHERE EmailAddress = ?";
+
+  dbConnection.query(sqlQuery, [EmailAddress], (error, results) => {
+    if (error) throw error;
+
+    if (results.length === 0) {
+      return res.status(401).json({
+        ErrorCode: 401,
+        Message: "Invalid email or password",
+      });
+    }
+
+    const user = results[0];
+
+    // Compare the provided password with the hashed password stored in the database
+    const passwordIsValid = bcrypt.compareSync(Password, user.Password);
+
+    if (!passwordIsValid) {
+      return res.status(401).json({
+        ErrorCode: 401,
+        Message: "Invalid email or password",
+      });
+    }
+
+    // Generate a token (if needed)
+    const token = jwt.sign({ id: user.id }, process.env.SECRET_KEY, {
+      expiresIn: 86400, // 24 hours
+    });
+
+    res.status(200).json({
+      id: user.id,
+      email: user.EmailAddress,
+      accessToken: token,
+    });
   });
 };
 
@@ -21,39 +105,6 @@ export const getUser = (req, res) => {
 //   dbConnection.query(sqlQuery, (error, result) => {
 //     if (error) throw error;
 //     res.status(200).json(result[0]);
-//   });
-// };
-
-// export const createNewCustomer = (req, res) => {
-//   // Declare that I store the request body in a constant
-//   const customer = req.body;
-//   // So, I create the object with the table fields by calling the constant customer
-//   const customerObj = [
-//     customer.first_name,
-//     customer.last_name,
-//     customer.email,
-//     customer.age,
-//   ];
-
-//   // This method verifies that the request body has all the complete fields, otherwise the operation will not be executed and sends an error message
-//   if (
-//     !customer.first_name ||
-//     !customer.last_name ||
-//     !customer.email ||
-//     !customer.age
-//   ) {
-//     return res.json({
-//       ErrorCode: 204,
-//       Message: "Fields cannot be empty",
-//     });
-//   }
-
-//   let sqlQuery =
-//     "INSERT INTO customers (first_name, last_name, email, age) VALUES ( ?,?,?,? )";
-
-//   dbConnection.query(sqlQuery, customerObj, (err, result) => {
-//     if (err) throw err;
-//     res.status(201).json("Customer created with id: " + result.insertId);
 //   });
 // };
 

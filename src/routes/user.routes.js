@@ -8,7 +8,9 @@ import {
   loginUser,
 } from "../controllers/userController";
 
-// router.get("/", getUser);
+import verifyToken from "../middleware/verifyToken";
+
+router.get("/", verifyToken, getUser);
 router.post("/register", createNewUser);
 router.post("/login", loginUser);
 

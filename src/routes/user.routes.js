@@ -6,6 +6,7 @@ import {
   getUser,
   createNewUser,
   loginUser,
+  getQuestions,
 } from "../controllers/userController";
 
 import verifyToken from "../middleware/verifyToken";
@@ -13,5 +14,6 @@ import verifyToken from "../middleware/verifyToken";
 router.get("/", verifyToken, getUser);
 router.post("/register", createNewUser);
 router.post("/login", loginUser);
+router.post("/getQuestions", getQuestions);
 
 export default router;

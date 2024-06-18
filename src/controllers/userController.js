@@ -93,6 +93,17 @@ export const loginUser = (req, res) => {
   });
 };
 
+export const getQuestions = (req, res) => {
+  // Assuming you have a userId to pass
+  const userId = req.body.userId; // Or wherever you get the userId from
+  let sqlQuery = `CALL usp_get_section_question_details_by_user_id(${userId})`;
+
+  dbConnection.query(sqlQuery, [userId], (error, results) => {
+    if (error) throw error;
+    res.status(200).json(results[0]); // Adjust results based on your procedure's output structure
+  });
+};
+
 // export const getCustomersById = (req, res) => {
 //   const id = parseInt(req.params.id);
 //   let sqlQuery = `SELECT * FROM customers WHERE id = ${id}`;

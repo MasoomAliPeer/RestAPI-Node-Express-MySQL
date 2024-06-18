@@ -47,24 +47,25 @@ export const createNewUser = (req, res) => {
 };
 
 export const loginUser = (req, res) => {
-  const { EmailAddress, Password } = req.body;
+  const { loginField, Password } = req.body;
 
-  if (!EmailAddress || !Password) {
+  // Validate that loginField is present
+  if (!loginField) {
     return res.status(400).json({
       ErrorCode: 204,
-      Message: "Email and Password cannot be empty",
+      Message: "Email or phone number is required",
     });
   }
 
-  let sqlQuery = "SELECT * FROM user WHERE EmailAddress = ?";
+  let sqlQuery = `SELECT * from user where ( emailaddress = '${loginField}' or PhoneNumber = '${loginField}' )`;
 
-  dbConnection.query(sqlQuery, [EmailAddress], (error, results) => {
+  dbConnection.query(sqlQuery, [loginField], (error, results) => {
     if (error) throw error;
 
     if (results.length === 0) {
       return res.status(401).json({
         ErrorCode: 401,
-        Message: "Invalid email or password",
+        Message: "Invalid login credentials",
       });
     }
 
@@ -76,18 +77,17 @@ export const loginUser = (req, res) => {
     if (!passwordIsValid) {
       return res.status(401).json({
         ErrorCode: 401,
-        Message: "Invalid email or password",
+        Message: "Invalid login credentials",
       });
     }
 
     // Generate a token (if needed)
-    const token = jwt.sign({ id: user.id }, process.env.SECRET_KEY, {
+    const token = jwt.sign({ id: user.UserId }, process.env.SECRET_KEY, {
       expiresIn: 86400, // 24 hours
     });
 
     res.status(200).json({
-      id: user.id,
-      email: user.EmailAddress,
+      UserId: user.UserId,
       accessToken: token,
     });
   });

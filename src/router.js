@@ -4,8 +4,8 @@ import userRoutes from "./routes/user.routes";
 
 //* Here I defined the first endpoint
 const router = (app) => {
-  app.use("/customers", customerRoutes);
-  app.use("/user", userRoutes);
+  // app.use("/customers", customerRoutes);
+  app.use("/", userRoutes);
 };
 
 export default router;

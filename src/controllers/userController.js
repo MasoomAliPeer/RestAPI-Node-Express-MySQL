@@ -15,14 +15,22 @@ export const getUser = (req, res) => {
 };
 
 export const register = async (req, res) => {
-  const user = req.body;
+  const {
+    firstName,
+    lastName,
+    emailAddress,
+    phoneNumber,
+    password,
+    companyName,
+  } = req.body;
 
   if (
-    !user.firstName ||
-    !user.lastName ||
-    !user.emailAddress ||
-    !user.password ||
-    !user.phoneNumber
+    !firstName ||
+    !lastName ||
+    !emailAddress ||
+    !phoneNumber ||
+    !password ||
+    !companyName
   ) {
     return res.status(400).json({
       ErrorCode: 204,
@@ -30,16 +38,14 @@ export const register = async (req, res) => {
     });
   }
 
-  // Normalize email to lowercase
-  const normalizedEmail = user.emailAddress.toLowerCase();
-  const phoneNumber = user.phoneNumber;
+  const normalizedEmail = emailAddress.toLowerCase();
 
   try {
     // Check if email or phone number already exists
     const [results] = await dbConnection
       .promise()
       .query(
-        `SELECT * FROM user WHERE LOWER(EmailAddress) = ? OR PhoneNumber = ?`,
+        `SELECT 1 FROM user WHERE LOWER(EmailAddress) = ? OR PhoneNumber = ?`,
         [normalizedEmail, phoneNumber]
       );
 
@@ -51,25 +57,23 @@ export const register = async (req, res) => {
     }
 
     // Hash the password before storing it
-    const hashedPassword = await bcrypt.hash(user.password, 10);
-    const userObj = [
-      user.firstName,
-      user.lastName,
-      normalizedEmail,
-      hashedPassword,
-      phoneNumber,
-    ];
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Insert the new user
-    const [result] = await dbConnection.promise().query(
-      `INSERT INTO user (UserId, FirstName, LastName, EmailAddress, Password, PhoneNumber) 
-      VALUES (UUID(), ?, ?, ?, ?, ?)`,
-      userObj
-    );
+    // Call the stored procedure with the provided data
+    const [procedureResult] = await dbConnection
+      .promise()
+      .query(`CALL usp_User_Package_Ins(?, ?, ?, ?, ?, ?)`, [
+        firstName,
+        lastName,
+        normalizedEmail,
+        phoneNumber,
+        hashedPassword,
+        companyName,
+      ]);
 
     res.status(201).json({
       Message: "User created successfully",
-      UserId: result.insertId,
+      procedureResult, // Adjust if necessary
     });
   } catch (error) {
     console.error(error);

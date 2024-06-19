@@ -179,6 +179,14 @@ export const getQuestions = async (req, res) => {
       return acc;
     }, []);
 
+    if (transformedResults.length === 0) {
+      return res.status(404).json({
+        ErrorCode: 404,
+        Message:
+          "No data available for the provided userId and assessmentTypeId.",
+      });
+    }
+
     res.status(200).json(transformedResults);
   } catch (error) {
     console.error("Database query error:", error);

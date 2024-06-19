@@ -132,25 +132,69 @@ export const loginUser = (req, res) => {
 };
 
 export const getQuestions = async (req, res) => {
-  const { userId } = req.body;
+  const { userId, assessmentTypeId } = req.body;
 
-  // Validate userId
-  if (!userId) {
+  // Validate input
+  if (!userId || !assessmentTypeId) {
     return res.status(400).json({
       ErrorCode: 400,
-      Message: "userId is required",
+      Message: "Both userId and assessmentTypeId are required.",
     });
   }
 
   try {
     // Properly format the SQL query
-    const sqlQuery = `CALL usp_get_section_question_details_by_user_id(?)`;
+    const sqlQuery = `CALL usp_get_section_question_details_by_user_id(?, ?)`;
 
     // Use promise-based dbConnection
-    const [results] = await dbConnection.promise().query(sqlQuery, [userId]);
+    const [results] = await dbConnection
+      .promise()
+      .query(sqlQuery, [userId, assessmentTypeId]);
 
-    // Adjust the response based on your procedure's output structure
-    res.status(200).json(results[0]);
+    // Transform the results
+    const transformedResults = results[0].reduce((acc, current) => {
+      const {
+        SectionName,
+        QuestionId,
+        QuestionText,
+        AnswerTypeName,
+        QuestionWeightage,
+      } = current;
+
+      // Find or create the section
+      let section = acc.find((section) => section.title === SectionName);
+      if (!section) {
+        section = { title: SectionName, questions: [] };
+        acc.push(section);
+      }
+
+      // Add the question to the section
+      section.questions.push({
+        questionCode: QuestionId.toString(),
+        questionText: QuestionText,
+        answerType: AnswerTypeName, // Assuming default answer type, replace with actual logic if needed
+        weightage: QuestionWeightage, // Assuming default weightage, replace with actual logic if needed
+      });
+
+      return acc;
+    }, []);
+
+    res.status(200).json(transformedResults);
+  } catch (error) {
+    console.error("Database query error:", error);
+    res.status(500).json({
+      ErrorCode: 500,
+      Message: "Internal Server Error. Please try again later.",
+    });
+  }
+};
+
+// Get list of companies
+export const getCompanyList = async (req, res) => {
+  try {
+    const sqlQuery = "SELECT CompanyId, Name FROM company";
+    const [results] = await dbConnection.promise().query(sqlQuery);
+    res.status(200).json(results);
   } catch (error) {
     console.error(error);
     res.status(500).json({
@@ -160,11 +204,17 @@ export const getQuestions = async (req, res) => {
   }
 };
 
-export const getCompanyList = (req, res) => {
-  let sqlQuery = "SELECT * FROM company";
-
-  dbConnection.query(sqlQuery, (error, results) => {
-    if (error) throw error;
+// Get list of assessment types
+export const getAssessmentType = async (req, res) => {
+  try {
+    const sqlQuery = "SELECT AssessmentTypeId, Name FROM assessmenttype";
+    const [results] = await dbConnection.promise().query(sqlQuery);
     res.status(200).json(results);
-  });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      ErrorCode: 500,
+      Message: "Internal Server Error",
+    });
+  }
 };

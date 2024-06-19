@@ -60,9 +60,9 @@ export const register = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Call the stored procedure with the provided data
-    const [procedureResult] = await dbConnection
+    const [Result] = await dbConnection
       .promise()
-      .query(`CALL usp_User_Package_Ins(?, ?, ?, ?, ?, ?)`, [
+      .query(`CALL usp_User_Registration_Ins(?, ?, ?, ?, ?, ?)`, [
         firstName,
         lastName,
         normalizedEmail,
@@ -73,7 +73,7 @@ export const register = async (req, res) => {
 
     res.status(201).json({
       Message: "User created successfully",
-      procedureResult, // Adjust if necessary
+      Result, // Adjust if necessary
     });
   } catch (error) {
     console.error(error);
@@ -131,15 +131,33 @@ export const loginUser = (req, res) => {
   });
 };
 
-export const getQuestions = (req, res) => {
-  // Assuming you have a userId to pass
-  const userId = req.body.userId; // Or wherever you get the userId from
-  let sqlQuery = `CALL usp_get_section_question_details_by_user_id(${userId})`;
+export const getQuestions = async (req, res) => {
+  const { userId } = req.body;
 
-  dbConnection.query(sqlQuery, [userId], (error, results) => {
-    if (error) throw error;
-    res.status(200).json(results[0]); // Adjust results based on your procedure's output structure
-  });
+  // Validate userId
+  if (!userId) {
+    return res.status(400).json({
+      ErrorCode: 400,
+      Message: "userId is required",
+    });
+  }
+
+  try {
+    // Properly format the SQL query
+    const sqlQuery = `CALL usp_get_section_question_details_by_user_id(?)`;
+
+    // Use promise-based dbConnection
+    const [results] = await dbConnection.promise().query(sqlQuery, [userId]);
+
+    // Adjust the response based on your procedure's output structure
+    res.status(200).json(results[0]);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      ErrorCode: 500,
+      Message: "Internal Server Error",
+    });
+  }
 };
 
 export const getCompanyList = (req, res) => {

@@ -60,9 +60,9 @@ export const register = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Call the stored procedure with the provided data
-    const [procedureResult] = await dbConnection
+    const [Result] = await dbConnection
       .promise()
-      .query(`CALL usp_User_Package_Ins(?, ?, ?, ?, ?, ?)`, [
+      .query(`CALL usp_User_Registration_Ins(?, ?, ?, ?, ?, ?)`, [
         firstName,
         lastName,
         normalizedEmail,
@@ -73,7 +73,7 @@ export const register = async (req, res) => {
 
     res.status(201).json({
       Message: "User created successfully",
-      procedureResult, // Adjust if necessary
+      Result, // Adjust if necessary
     });
   } catch (error) {
     console.error(error);

@@ -158,6 +158,7 @@ export const getQuestions = async (req, res) => {
         QuestionId,
         QuestionText,
         AnswerTypeName,
+        AnswerTypeId,
         QuestionWeightage,
       } = current;
 
@@ -174,6 +175,7 @@ export const getQuestions = async (req, res) => {
         questionText: QuestionText,
         answerType: AnswerTypeName, // Assuming default answer type, replace with actual logic if needed
         weightage: QuestionWeightage, // Assuming default weightage, replace with actual logic if needed
+        answerTypeID: AnswerTypeId,
       });
 
       return acc;

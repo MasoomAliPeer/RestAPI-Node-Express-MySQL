@@ -1,14 +1,15 @@
 import dbConnection from "../database/dbConnection";
-import bcrypt from "bcrypt"; // Assuming passwords are hashed
-import jwt from "jsonwebtoken"; // For generating JWT tokens
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
+import { MESSAGES } from "../config/messages";
+import * as userQueries from "../queries/userQueries";
+import * as assessmentQueries from "../queries/assessmentQueries";
 
 dotenv.config();
 
 export const getUser = (req, res) => {
-  let sqlQuery = "SELECT * FROM user";
-
-  dbConnection.query(sqlQuery, (error, results) => {
+  dbConnection.query(userQueries.getAllUsers, (error, results) => {
     if (error) throw error;
     res.status(200).json(results);
   });
@@ -32,10 +33,7 @@ export const register = async (req, res) => {
     !password ||
     !companyName
   ) {
-    return res.status(400).json({
-      ErrorCode: 204,
-      Message: "Fields cannot be empty.",
-    });
+    return res.status(400).json(MESSAGES.FIELDS_CANNOT_BE_EMPTY);
   }
 
   const normalizedEmail = emailAddress.toLowerCase();
@@ -44,16 +42,10 @@ export const register = async (req, res) => {
     // Check if email or phone number already exists
     const [results] = await dbConnection
       .promise()
-      .query(
-        `SELECT 1 FROM user WHERE LOWER(EmailAddress) = ? OR PhoneNumber = ?`,
-        [normalizedEmail, phoneNumber]
-      );
+      .query(userQueries.checkUserExists, [normalizedEmail, phoneNumber]);
 
     if (results.length > 0) {
-      return res.status(409).json({
-        ErrorCode: 409,
-        Message: "Email address or phone number already exists.",
-      });
+      return res.status(409).json(MESSAGES.EMAIL_OR_PHONE_EXISTS);
     }
 
     // Hash the password before storing it
@@ -62,7 +54,7 @@ export const register = async (req, res) => {
     // Call the stored procedure with the provided data
     const [Result] = await dbConnection
       .promise()
-      .query(`CALL usp_User_Registration_Ins(?, ?, ?, ?, ?, ?)`, [
+      .query(userQueries.registerUser, [
         firstName,
         lastName,
         normalizedEmail,
@@ -72,15 +64,12 @@ export const register = async (req, res) => {
       ]);
 
     res.status(201).json({
-      Message: "User created successfully.",
+      Message: MESSAGES.USER_CREATED_SUCCESSFULLY.Message,
       Result, // Adjust if necessary
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({
-      ErrorCode: 500,
-      Message: "Internal Server Error.",
-    });
+    res.status(500).json(MESSAGES.INTERNAL_SERVER_ERROR);
   }
 };
 
@@ -89,46 +78,39 @@ export const loginUser = (req, res) => {
 
   // Validate that loginField is present
   if (!userName) {
-    return res.status(400).json({
-      ErrorCode: 204,
-      Message: "Email or phone number is required.",
-    });
+    return res.status(400).json(MESSAGES.EMAIL_OR_PHONE_REQUIRED);
   }
 
-  let sqlQuery = `SELECT * from user where ( emailaddress = '${userName}' or PhoneNumber = '${userName}' )`;
+  dbConnection.query(
+    userQueries.getUserByUsername,
+    [userName],
+    (error, results) => {
+      if (error) throw error;
 
-  dbConnection.query(sqlQuery, [userName], (error, results) => {
-    if (error) throw error;
+      if (results.length === 0) {
+        return res.status(401).json(MESSAGES.USERNAME_DOES_NOT_EXIST);
+      }
 
-    if (results.length === 0) {
-      return res.status(401).json({
-        ErrorCode: 401,
-        Message: "Username doesn't exist! Please register.",
+      const user = results[0];
+
+      // Compare the provided password with the hashed password stored in the database
+      const passwordIsValid = bcrypt.compareSync(password, user.Password);
+
+      if (!passwordIsValid) {
+        return res.status(401).json(MESSAGES.INVALID_CREDENTIALS);
+      }
+
+      // Generate a token (if needed)
+      const token = jwt.sign({ id: user.UserId }, process.env.SECRET_KEY, {
+        expiresIn: 86400, // 24 hours
+      });
+
+      res.status(200).json({
+        UserId: user.UserId,
+        accessToken: token,
       });
     }
-
-    const user = results[0];
-
-    // Compare the provided password with the hashed password stored in the database
-    const passwordIsValid = bcrypt.compareSync(password, user.Password);
-
-    if (!passwordIsValid) {
-      return res.status(401).json({
-        ErrorCode: 401,
-        Message: "Invalid credentials.",
-      });
-    }
-
-    // Generate a token (if needed)
-    const token = jwt.sign({ id: user.UserId }, process.env.SECRET_KEY, {
-      expiresIn: 86400, // 24 hours
-    });
-
-    res.status(200).json({
-      UserId: user.UserId,
-      accessToken: token,
-    });
-  });
+  );
 };
 
 export const getQuestions = async (req, res) => {
@@ -136,20 +118,19 @@ export const getQuestions = async (req, res) => {
 
   // Validate input
   if (!userId || !assessmentTypeId) {
-    return res.status(400).json({
-      ErrorCode: 400,
-      Message: "Both userId and assessmentTypeId are required.",
-    });
+    return res
+      .status(400)
+      .json(MESSAGES.BOTH_USERID_AND_ASSESSMENTTYPEID_REQUIRED);
   }
 
   try {
-    // Properly format the SQL query
-    const sqlQuery = `CALL usp_get_section_question_details_by_user_id(?, ?)`;
-
     // Use promise-based dbConnection
     const [results] = await dbConnection
       .promise()
-      .query(sqlQuery, [userId, assessmentTypeId]);
+      .query(assessmentQueries.getSectionQuestionsByUserId, [
+        userId,
+        assessmentTypeId,
+      ]);
 
     // Transform the results
     const transformedResults = results[0].reduce((acc, current) => {
@@ -174,54 +155,45 @@ export const getQuestions = async (req, res) => {
         questionText: QuestionText,
         answerType: AnswerTypeName, // Assuming default answer type, replace with actual logic if needed
         weightage: QuestionWeightage, // Assuming default weightage, replace with actual logic if needed
+        // answerTypeID : : add this : :
       });
 
       return acc;
     }, []);
 
     if (transformedResults.length === 0) {
-      return res.status(404).json({
-        ErrorCode: 404,
-        Message: "No data available.",
-      });
+      return res.status(404).json(MESSAGES.NO_DATA_AVAILABLE);
     }
 
     res.status(200).json(transformedResults);
   } catch (error) {
     console.error("Database query error:", error);
-    res.status(500).json({
-      ErrorCode: 500,
-      Message: "Internal Server Error.",
-    });
+    res.status(500).json(MESSAGES.INTERNAL_SERVER_ERROR);
   }
 };
 
 // Get list of companies
 export const getCompanyList = async (req, res) => {
   try {
-    const sqlQuery = "SELECT CompanyId, Name FROM company";
-    const [results] = await dbConnection.promise().query(sqlQuery);
+    const [results] = await dbConnection
+      .promise()
+      .query(assessmentQueries.getAllCompanies);
     res.status(200).json(results);
   } catch (error) {
     console.error(error);
-    res.status(500).json({
-      ErrorCode: 500,
-      Message: "Internal Server Error.",
-    });
+    res.status(500).json(MESSAGES.INTERNAL_SERVER_ERROR);
   }
 };
 
 // Get list of assessment types
 export const getAssessmentType = async (req, res) => {
   try {
-    const sqlQuery = "SELECT AssessmentTypeId, Name FROM assessmenttype";
-    const [results] = await dbConnection.promise().query(sqlQuery);
+    const [results] = await dbConnection
+      .promise()
+      .query(assessmentQueries.getAllAssessmentTypes);
     res.status(200).json(results);
   } catch (error) {
     console.error(error);
-    res.status(500).json({
-      ErrorCode: 500,
-      Message: "Internal Server Error.",
-    });
+    res.status(500).json(MESSAGES.INTERNAL_SERVER_ERROR);
   }
 };

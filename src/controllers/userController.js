@@ -52,7 +52,7 @@ export const register = async (req, res) => {
     if (results.length > 0) {
       return res.status(409).json({
         ErrorCode: 409,
-        Message: "Email address or phone number already exists",
+        Message: "Email address or phone number already exists.",
       });
     }
 
@@ -72,14 +72,14 @@ export const register = async (req, res) => {
       ]);
 
     res.status(201).json({
-      Message: "User created successfully",
+      Message: "User created successfully.",
       Result, // Adjust if necessary
     });
   } catch (error) {
     console.error(error);
     res.status(500).json({
       ErrorCode: 500,
-      Message: "Internal Server Error",
+      Message: "Internal Server Error.",
     });
   }
 };
@@ -91,7 +91,7 @@ export const loginUser = (req, res) => {
   if (!userName) {
     return res.status(400).json({
       ErrorCode: 204,
-      Message: "Email or phone number is required",
+      Message: "Email or phone number is required.",
     });
   }
 
@@ -115,7 +115,7 @@ export const loginUser = (req, res) => {
     if (!passwordIsValid) {
       return res.status(401).json({
         ErrorCode: 401,
-        Message: "Invalid credentials",
+        Message: "Invalid credentials.",
       });
     }
 
@@ -182,8 +182,7 @@ export const getQuestions = async (req, res) => {
     if (transformedResults.length === 0) {
       return res.status(404).json({
         ErrorCode: 404,
-        Message:
-          "No data available for the provided userId and assessmentTypeId.",
+        Message: "No data available.",
       });
     }
 
@@ -192,7 +191,7 @@ export const getQuestions = async (req, res) => {
     console.error("Database query error:", error);
     res.status(500).json({
       ErrorCode: 500,
-      Message: "Internal Server Error. Please try again later.",
+      Message: "Internal Server Error.",
     });
   }
 };
@@ -207,7 +206,7 @@ export const getCompanyList = async (req, res) => {
     console.error(error);
     res.status(500).json({
       ErrorCode: 500,
-      Message: "Internal Server Error",
+      Message: "Internal Server Error.",
     });
   }
 };
@@ -222,7 +221,7 @@ export const getAssessmentType = async (req, res) => {
     console.error(error);
     res.status(500).json({
       ErrorCode: 500,
-      Message: "Internal Server Error",
+      Message: "Internal Server Error.",
     });
   }
 };

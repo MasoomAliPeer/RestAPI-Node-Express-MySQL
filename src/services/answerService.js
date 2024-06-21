@@ -22,8 +22,8 @@ export const addAnswers = async (questions, userId, assessmentTypeID) => {
       const [result] = await dbConnection
         .promise()
         .query(
-          "INSERT INTO response (UserId, AssessmentId, QuestionId, AnswerTypeId, ResponseValue, Comments) VALUES (?, ?, ?, ?, ?, '')",
-          [userId, assessmentTypeID, questionCode, answerTypeID, value]
+          "INSERT INTO response ( AssessmentId, QuestionId, AnswerTypeId, ResponseValue, Comments) VALUES ( ?, ?, ?, ?, ?)",
+          [assessmentID,  assessmentTypeID, questionCode, answerTypeID, value]
         );
 
       return result.insertId; // Return the ID of the inserted record if needed

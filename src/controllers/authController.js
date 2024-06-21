@@ -101,6 +101,7 @@ export const loginUser = (req, res) => {
 
         res.status(200).json({
           UserId: user.UserId,
+          CompanyID: user.CompanyId,
           accessToken: token,
         });
       }

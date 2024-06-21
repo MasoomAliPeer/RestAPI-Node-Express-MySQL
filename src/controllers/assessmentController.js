@@ -40,6 +40,53 @@ export const getDomainData = async (req, res) => {
   }
 };
 
+export const postAssessmentData = async (req, res) => {
+  const {
+    assessmentName,
+    companyID,
+    userID,
+    assessmentTypeId,
+    functionalDomainID,
+    cloudProviderId,
+    technicalDomainId,
+  } = req.body;
+
+  if (
+    !assessmentName ||
+    !companyID ||
+    !userID ||
+    !assessmentTypeId ||
+    !functionalDomainID ||
+    !cloudProviderId ||
+    !technicalDomainId
+  ) {
+    return res.status(400).json(MESSAGES.FIELDS_CANNOT_BE_EMPTY);
+  }
+
+  try {
+    const [results] = await dbConnection
+      .promise()
+      .query(assessmentQueries.postAssessmentData, [
+        assessmentName,
+        companyID,
+        userID,
+        assessmentTypeId,
+        functionalDomainID,
+        cloudProviderId,
+        technicalDomainId,
+      ]);
+
+    res.status(201).json({
+      status: MESSAGES.ANSWERS_ADDED_SUCCESSFULLY,
+      AssessmentId: results.insertId,
+      results,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json(MESSAGES.INTERNAL_SERVER_ERROR);
+  }
+};
+
 export const getQuestions = async (req, res) => {
   const { userId, assessmentTypeId } = req.body;
 

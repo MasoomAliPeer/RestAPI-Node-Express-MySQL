@@ -7,3 +7,5 @@ export const getFunctionalDomain = `SELECT DISTINCT FunctionalDomainId, Name AS 
 export const getCloudProvider = `SELECT DISTINCT CloudProviderId, Name AS CloudProviderName FROM CloudProvider`;
 
 export const getTechnicalDomain = `SELECT DISTINCT TechnicalDomainId, Name AS TechnicalDomainName FROM TechnicalDomain`;
+
+export const postAssessmentData = `INSERT INTO assessment ( AssessmentName, CompanyId, UserId, AssessmentTypeId, FunctionalDomainId, CloudProviderId, TechnicalDomainId) VALUES ( ?, ?, ?, ?, ?, ?, ?)`;

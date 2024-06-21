@@ -140,14 +140,14 @@ export const getQuestions = async (req, res) => {
 
 export const addAnswer = async (req, res) => {
   try {
-    const { AssessmentId, questions } = req.body;
+    const { assessmentId, questions } = req.body;
 
-    if (!AssessmentId || !Array.isArray(questions) || questions.length === 0) {
+    if (!assessmentId || !Array.isArray(questions) || questions.length === 0) {
       return res.status(400).json({ message: MESSAGES.INVALID_REQUEST_BODY });
     }
 
     // Validate and insert answers
-    const result = await addAnswers(AssessmentId, questions);
+    const result = await addAnswers(assessmentId, questions);
 
     // Send success response
     res.status(201).json({

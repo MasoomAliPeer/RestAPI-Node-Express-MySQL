@@ -15,6 +15,31 @@ export const getAssessmentType = async (req, res) => {
   }
 };
 
+export const getDomainData = async (req, res) => {
+  try {
+    const [functionalDomains] = await dbConnection
+      .promise()
+      .query(assessmentQueries.getFunctionalDomain);
+
+    const [cloudProviders] = await dbConnection
+      .promise()
+      .query(assessmentQueries.getCloudProvider);
+
+    const [technicalDomains] = await dbConnection
+      .promise()
+      .query(assessmentQueries.getTechnicalDomain);
+
+    res.status(200).json({
+      functionalDomains,
+      cloudProviders,
+      technicalDomains,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: MESSAGES.INTERNAL_SERVER_ERROR });
+  }
+};
+
 export const getQuestions = async (req, res) => {
   const { userId, assessmentTypeId } = req.body;
 

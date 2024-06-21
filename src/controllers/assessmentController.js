@@ -1,6 +1,5 @@
 import dbConnection from "../database/dbConnection";
 import { MESSAGES } from "../config/messages";
-import * as answerService from "../services/answerService";
 import * as assessmentQueries from "../queries/assessmentQueries";
 
 export const getAssessmentType = async (req, res) => {
@@ -139,37 +138,47 @@ export const getQuestions = async (req, res) => {
   }
 };
 
-//ADD Answers try this afterwards : :
 export const addAnswer = async (req, res) => {
   try {
-    const answersArray = req.body;
+    const { AssessmentId, questions } = req.body;
 
-    // Validate input (for illustration purposes)
-    if (!Array.isArray(answersArray) || answersArray.length === 0) {
-      return res.status(400).json(MESSAGES.INVALID_REQUEST_BODY);
+    if (!AssessmentId || !Array.isArray(questions) || questions.length === 0) {
+      return res.status(400).json({ message: MESSAGES.INVALID_REQUEST_BODY });
     }
 
-    // Process each section (answers) in the array
-    const results = [];
-    for (let i = 0; i < answersArray.length; i++) {
-      const { title, questions, userId, assessmentTypeID } = answersArray[i];
-
-      // Call service to process answers for each section
-      const result = await answerService.addAnswers(
-        questions,
-        userId,
-        assessmentTypeID
-      );
-      results.push({ title, result }); // Store results for each section
-    }
+    // Validate and insert answers
+    const result = await addAnswers(AssessmentId, questions);
 
     // Send success response
     res.status(201).json({
       message: MESSAGES.ANSWERS_ADDED_SUCCESSFULLY,
-      results,
+      result,
     });
   } catch (error) {
     console.error("Error adding answers:", error);
     res.status(500).json(MESSAGES.INTERNAL_SERVER_ERROR);
+  }
+};
+
+const addAnswers = async (AssessmentId, questions) => {
+  try {
+    const values = questions.map(
+      ({ questionCode, value, answerTypeID, Comments = "" }) => [
+        AssessmentId,
+        questionCode,
+        answerTypeID,
+        value,
+        Comments,
+      ]
+    );
+
+    const [result] = await dbConnection
+      .promise()
+      .query(assessmentQueries.postResponseData, [values]);
+
+    return result.insertId;
+  } catch (error) {
+    console.error("Error adding answers in service:", error);
+    throw error;
   }
 };

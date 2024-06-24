@@ -11,3 +11,5 @@ export const getTechnicalDomain = `SELECT DISTINCT TechnicalDomainId, Name AS Te
 export const postAssessmentData = `INSERT INTO assessment ( AssessmentName, CompanyId, UserId, AssessmentTypeId, FunctionalDomainId, CloudProviderId, TechnicalDomainId) VALUES ( ?, ?, ?, ?, ?, ?, ?)`;
 
 export const postResponseData = `INSERT INTO response ( AssessmentId, QuestionId, AnswerTypeId, ResponseValue, Comments ) VALUES ?`;
+
+export const getAssessmentSummary = `CALL usp_User_Assessment_Summary(?)`;

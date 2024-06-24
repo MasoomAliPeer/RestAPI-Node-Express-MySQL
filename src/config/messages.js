@@ -42,12 +42,12 @@ export const MESSAGES = {
     ErrorCode: 404,
     Message: "No data available.",
   },
-  
+
   INVALID_REQUEST_BODY: {
     ErrorCode: 204,
     Message: "Please enter proper answer format !",
   },
   ANSWERS_ADDED_SUCCESSFULLY: {
-    Message: "Data inserted.",
+    Message: "Details saved Successfully !",
   },
 };

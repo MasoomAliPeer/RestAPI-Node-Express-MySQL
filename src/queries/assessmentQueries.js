@@ -13,3 +13,5 @@ export const postAssessmentData = `INSERT INTO assessment ( AssessmentName, Comp
 export const postResponseData = `INSERT INTO response ( AssessmentId, QuestionId, AnswerTypeId, ResponseValue, Comments ) VALUES ?`;
 
 export const getAssessmentSummary = `CALL usp_User_Assessment_Summary(?)`;
+
+export const getAssessmentDetails = `CALL usp_User_Assessment_Details(?)`;

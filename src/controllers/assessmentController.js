@@ -204,3 +204,25 @@ export const getAssessmentSummary = async (req, res) => {
     res.status(500).json(MESSAGES.INTERNAL_SERVER_ERROR);
   }
 };
+
+export const getAssessmentDetails = async (req, res) => {
+  const { assessmentId } = req.body;
+
+  if (!assessmentId) {
+    return res.status(400).json(MESSAGES.FIELDS_CANNOT_BE_EMPTY);
+  }
+
+  try {
+    const [results] = await dbConnection
+      .promise()
+      .query(assessmentQueries.getAssessmentDetails, [assessmentId]);
+
+    res.status(201).json({
+      status: MESSAGES.FETCH_SUCCESSFULLY,
+      results,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json(MESSAGES.INTERNAL_SERVER_ERROR);
+  }
+};

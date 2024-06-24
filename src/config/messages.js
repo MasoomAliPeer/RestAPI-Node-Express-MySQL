@@ -50,4 +50,7 @@ export const MESSAGES = {
   ANSWERS_ADDED_SUCCESSFULLY: {
     Message: "Details saved Successfully !",
   },
+  FETCH_SUCCESSFULLY: {
+    Message: "Retrieved data Successfully !",
+  },
 };

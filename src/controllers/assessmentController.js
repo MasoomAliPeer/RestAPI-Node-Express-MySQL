@@ -182,3 +182,25 @@ const addAnswers = async (AssessmentId, questions) => {
     throw error;
   }
 };
+
+export const getAssessmentSummary = async (req, res) => {
+  const { userId } = req.body;
+
+  if (!userId) {
+    return res.status(400).json(MESSAGES.FIELDS_CANNOT_BE_EMPTY);
+  }
+
+  try {
+    const [results] = await dbConnection
+      .promise()
+      .query(assessmentQueries.getAssessmentSummary, [userId]);
+
+    res.status(201).json({
+      status: MESSAGES.FETCH_SUCCESSFULLY,
+      results,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json(MESSAGES.INTERNAL_SERVER_ERROR);
+  }
+};

@@ -7,6 +7,7 @@ import {
   getAssessmentType,
   getDomainData,
   postAssessmentData,
+  getAssessmentSummary,
 } from "../controllers/assessmentController";
 
 const router = express.Router();
@@ -18,5 +19,7 @@ router.get("/getDomainData", getDomainData);
 router.post("/postAssessmentData", postAssessmentData);
 router.post("/getQuestions", getQuestions);
 router.post("/addAnswers", addAnswer);
+
+router.post("/getAssessmentSummary", getAssessmentSummary);
 
 export default router;

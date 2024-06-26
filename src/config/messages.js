@@ -6,7 +6,7 @@ export const MESSAGES = {
 
   FIELDS_CANNOT_BE_EMPTY: {
     ErrorCode: 204,
-    Message: "Fields cannot be empty !",
+    Message: "Fields cannot be empty!",
   },
 
   EMAIL_OR_PHONE_EXISTS: {
@@ -20,12 +20,17 @@ export const MESSAGES = {
 
   EMAIL_OR_PHONE_REQUIRED: {
     ErrorCode: 204,
-    Message: "Email or phone number is required.",
+    Message: "Email ID or phone number is required.",
   },
 
   USERNAME_DOES_NOT_EXIST: {
     ErrorCode: 401,
-    Message: "Username doesn't exist ! Please register.",
+    Message: "Username doesn't exist! Please register.",
+  },
+
+  EMAIL_DOES_NOT_EXIST: {
+    ErrorCode: 401,
+    Message: "Email ID doesn't exist! Please register.",
   },
 
   INVALID_CREDENTIALS: {
@@ -35,7 +40,7 @@ export const MESSAGES = {
 
   BOTH_USERID_AND_ASSESSMENTTYPEID_REQUIRED: {
     ErrorCode: 204,
-    Message: "Both userId and assessmentTypeId are required.",
+    Message: "Both User Id and Assessment Type Id required.",
   },
 
   NO_DATA_AVAILABLE: {
@@ -45,12 +50,30 @@ export const MESSAGES = {
 
   INVALID_REQUEST_BODY: {
     ErrorCode: 204,
-    Message: "Please enter proper answer format !",
+    Message: "Please enter proper details!",
   },
+
   ANSWERS_ADDED_SUCCESSFULLY: {
-    Message: "Details saved Successfully !",
+    Message: "Details saved Successfully! Redirecting to Dashboard.",
   },
+
   FETCH_SUCCESSFULLY: {
-    Message: "Retrieved data Successfully !",
+    Message: "Retrieved data Successfully!",
+  },
+
+  ERROR_SENDING_EMAIL: {
+    Message: "Error sending email.",
+  },
+  OTP_SENT: {
+    Message: "OTP sent to email.",
+  },
+  OTP_VERIFIED: {
+    Message: "OTP verified!",
+  },
+  OTP_INCORRECT: {
+    Message: "Incorrect OTP!",
+  },
+  PASSWORD_SENT: {
+    Message: "Password reset successful",
   },
 };

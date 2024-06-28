@@ -73,6 +73,9 @@ export const MESSAGES = {
   OTP_INCORRECT: {
     Message: "Incorrect OTP!",
   },
+  OTP_REQUIRED: {
+    Message: "OTP Required!",
+  },
   PASSWORD_SENT: {
     Message: "Password reset successful",
   },

@@ -1,9 +1,6 @@
 import dbConnection from "../database/dbConnection";
-
 import * as settingQueries from "../queries/settingQueries";
 import { MESSAGES } from "../config/messages";
-
-import { forgotPassword } from "./authController";
 
 export const fetchEmailAndPhone = async (req, res) => {
   try {
@@ -22,8 +19,6 @@ export const fetchEmailAndPhone = async (req, res) => {
     }
 
     res.status(200).json(results[0]);
-
-    forgotPassword
   } catch (error) {
     console.error(error);
     res.status(500).json(MESSAGES.INTERNAL_SERVER_ERROR);
@@ -32,7 +27,7 @@ export const fetchEmailAndPhone = async (req, res) => {
 
 export const updateEmailOrPhone = async (req, res) => {
   try {
-    const { userId, email, phone } = req.body;
+    const { userId, email, phone, otp } = req.body;
 
     if (!userId) {
       return res.status(400).json(MESSAGES.USERID_REQUIRED);
@@ -40,6 +35,15 @@ export const updateEmailOrPhone = async (req, res) => {
 
     if (!email && !phone) {
       return res.status(400).json(MESSAGES.EMAIL_OR_PHONE_REQUIRED);
+    }
+
+    if (!otp) {
+      return res.status(400).json(MESSAGES.OTP_REQUIRED);
+    }
+
+    const isOtpValid = await verifyOtp(userId, otp);
+    if (!isOtpValid) {
+      return res.status(400).json(MESSAGES.OTP_INCORRECT);
     }
 
     await dbConnection
@@ -51,4 +55,12 @@ export const updateEmailOrPhone = async (req, res) => {
     console.error(error);
     res.status(500).json(MESSAGES.INTERNAL_SERVER_ERROR);
   }
+};
+
+// OTP Verification Function
+const verifyOtp = async (userId, otp) => {
+  const [rows] = await dbConnection
+    .promise()
+    .query(settingQueries.verifyOTP, [userId, otp]);
+  return rows.length > 0;
 };

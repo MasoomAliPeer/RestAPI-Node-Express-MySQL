@@ -123,14 +123,17 @@ export const loginUser = (req, res) => {
 export const forgotPassword = async (req, res) => {
   try {
     const { email } = req.body;
+    const tokenHeader = req.headers["x-access-token"];
 
-    // Check if email exists
-    const [user] = await dbConnection
-      .promise()
-      .query(authQueries.checkEmailExists, [email]);
+    if (!tokenHeader) {
+      // Check if email exists
+      const [user] = await dbConnection
+        .promise()
+        .query(authQueries.checkEmailExists, [email]);
 
-    if (user.length === 0) {
-      return res.status(404).json(MESSAGES.EMAIL_DOES_NOT_EXIST);
+      if (user.length === 0) {
+        return res.status(404).json(MESSAGES.EMAIL_DOES_NOT_EXIST);
+      }
     }
 
     const token = crypto.randomBytes(20).toString("hex");

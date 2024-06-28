@@ -76,4 +76,11 @@ export const MESSAGES = {
   PASSWORD_SENT: {
     Message: "Password reset successful",
   },
+
+  USERID_REQUIRED: {
+    Message: "UserId is required",
+  },
+  USER_NOT_FOUND: {
+    Message: "User not found",
+  },
 };
